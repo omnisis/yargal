@@ -1,22 +1,12 @@
 require File.dirname(__FILE__) + '/../lib/yargal'
+require File.dirname(__FILE__) + '/spec_helper'
 
-class TestChromosome < BaseChromosome
-  attr_accessor :fitness
-
-  def initialize(fitness = rand(50))
-    @fitness = fitness
-  end
-
-  def to_s
-    puts "{chromosome(#{object_id}) fitness: #{fitness}}"
-  end
-
-end
+include YargalSpecHelper
 
 describe "GA Engine" do
   before(:each) do
-    @test_population = []
-    10.times { @test_population << TestChromosome.new }
+    @test_population = Population.new()
+    10.times { @test_population << TestChromosome.new(rand(101)) }
   end
 
   it "should have sane defaults" do
@@ -29,7 +19,6 @@ describe "GA Engine" do
   it "should properly parse setup options" do
     options = { :chromosome_len => 32, :population_size => 10, :crossover_rate => 0.5, :mutation_rate => 0.2 }
     ga = GA.new(TestChromosome, options)
-    ga.chromosome_len.should eql 32
     ga.population_size.should eql 10
     ga.crossover_rate.should eql 0.5
     ga.mutation_rate.should eql 0.2
@@ -63,13 +52,16 @@ describe "GA Engine" do
         selected_gen << @ga.select_roulette(@test_population)
       end
       times_selected = selected_gen.find_all { |x| x.fitness == tgt_fitness }.size
-      return times_selected.to_f / selected_gen.size
+      rate = times_selected.to_f / selected_gen.size
+      puts "selrate: #{rate}"
+      rate
     end
-
 
     it "should favor highest fitness chromosomes" do
       @test_population << TestChromosome.new(LARGE_FITNESS)
+      @test_population.calc_fitness
       selrate = calc_selection_rate(LARGE_FITNESS)
+      puts "selection rate:" #{selrate}"
       (selrate > 0.75).should be_true
     end
 
@@ -79,8 +71,6 @@ describe "GA Engine" do
       (selrate < 0.25).should be_true
     end
 
-
   end
 
 end
-
