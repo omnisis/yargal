@@ -45,6 +45,15 @@ describe "GA Engine" do
       kid1.join.should eql "1011110"
       kid2.join.should eql "0010111"
     end
+
+    it "should work with mystery chromosome" do
+      mom = MysteryWord.new("sanenoi")
+      dad = MysteryWord.new("lahjlpt")
+      @ga = GA.new(MysteryWord)
+      kid1, kid2 = @ga.crossover(mom,dad,3)
+      kid1.join.should eql "sanjlpt"
+      kid2.join.should eql "lahenoi"
+    end
   end
 
   pending "should perform mutation" do
@@ -90,8 +99,18 @@ describe "GA Engine" do
       @ga.evolve!
     end
 
-    it "should evolve continuosly"  do
-      @ga.evolve!(500)
+    it "should evolve maximal solution"  do
+      @ga.evolve!(5)
+      puts "fitness after 500 tries: #{@test_population.total_fitness}"
+    end
+
+
+    it "should improve fitness over time" do
+      @ga = GA.new(MysteryWord, { :population_size => 5000, :mutation_rate => 0.01 })
+      5.times do
+        @ga.evolve!
+      end
+      @ga.print_currgen
     end
 
   end

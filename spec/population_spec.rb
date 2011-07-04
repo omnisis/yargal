@@ -38,6 +38,4 @@ describe "Population" do
     end
   end
 
-
-
 end

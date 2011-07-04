@@ -23,6 +23,7 @@ class GA
     @chromosome_length = options[:chromosome_length] || 10
     @chromosome_klass = chromosome_klass
     @generation_count = 0
+    @elitism_factor = options[:elitism_factor] || 0.05 
     build_initial_population
   end
 
@@ -31,26 +32,33 @@ class GA
     num_generations.times do
       perform_evolution!
     end
-    print_currgen
   end
 
   def perform_evolution!()
     puts "calculating fitness ..."
     @curr_population.calc_fitness
     print_stats
+    print_currgen
 
     new_pop = Population.new()
-    @curr_population.in_groups_of(2) do 
-      #puts "slice: #{slice}"
+    num_selections = @population_size/2 + @population_size % 2
+    puts "num iterations: #{num_selections}"
+
+    num_selections.times do 
+      # selection
       mom, dad = @curr_population.sample(2)
-      #puts "mom: #{mom}, dad: #{dad}"
+
+      # x-over
       children =  crossover(mom, dad)
-      mutate!(children) # x-men first class!
-      #puts "children: #{children[0]}, #{children[1]}"
-      new_pop << children[0] << children[1]
-      #puts "newpop: #{new_pop}"
+
+      # mutation
+      children.each do |child| 
+        next if child.nil?
+        child.mutate! if rand <= @mutation_rate
+        new_pop << child 
+      end 
+
     end
-    puts "newpop size: #{curr_population.size}"
 
     @curr_population = Population.new
     new_pop.each { |x| @curr_population << x }
@@ -60,18 +68,24 @@ class GA
   def print_stats
     puts "------------------------------------------------------------------------"
     puts "generation [#{generation_count}] -- " +
-          "mean fitness [#{@curr_population.mean_fitness}] -- " +
-          "total fitness [#{@curr_population.total_fitness}]"
-    #puts @curr_population
+          "mean fitness [#{format("%d", @curr_population.mean_fitness)}] -- " +
+          "total fitness [#{format("%d", @curr_population.total_fitness)}]"
     puts "------------------------------------------------------------------------"
   end
 
   def print_currgen
-    #puts @curr_population
+    @curr_population.each { |x| puts "member: #{x}"  } if @logger
+  end
+
+  def maybe_do_crossover(mom, dad)
+    if rand <= @crossover_rate
+      crossover(mom, dad)
+    end
   end
 
   # Performs crossover (recombination) operator on two chromosomes
   def crossover(mom, dad, split_pt = rand(mom.chromosome_len)  )
+    puts "performing x-over ..." if @logger
     mom_parts = mom.dissect(split_pt)
     dad_parts = dad.dissect(split_pt) 
     c1 = @chromosome_klass.new(mom_parts[0] + dad_parts[1])
@@ -80,15 +94,10 @@ class GA
     [c1, c2]
   end
 
-  # Performs mutation operator on two chromosomes
-  def mutate!(children)
-    #TODO: implement this
-    return children
-  end
-
   # Performs selection from the given population and returns
   # a new population consisting of num_members chromosomes 
   def select(pop, num_members = 1)
+    puts "performing selection ..." if @logger
     selections = num_members.times.collect { |x| select_roulette(pop) }
     selections
   end
@@ -113,7 +122,7 @@ class GA
 
   # builds an initial generation of chromosomes from the chromosome class given at construction
   def build_initial_population
-    puts "Building initial population of size: #{@population_size} ..."
+    puts "Building initial population of size: #{@population_size} ..." 
     @curr_population = Population.new
     @population_size.times.each { @curr_population << @chromosome_klass.random }
   end

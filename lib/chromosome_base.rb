@@ -3,7 +3,8 @@
 # an arbitrary length array. 
 ##### 
 class ChromosomeBase < Array
-  attr_accessor :fitness, :chromosome_len
+  attr_accessor  :chromosome_len, :fitness
+  DEFAULT_MUTATION_RATE = 0
 
   # if an existing gene_seq is supplied is supplied use it
   # otherwise generate a random bit string of length len
@@ -11,13 +12,14 @@ class ChromosomeBase < Array
     gene_sequence.length.times do |i|
       self << gene_sequence[i]
     end
-    @fitness = 0
+    @fitness = 0.0
   end
 
   alias :chromosome_len :size
 
   def to_s
-    "{ chromsome_len: #{chromosome_len}, fitness: #{fitness}, gene sequence: #{gene_seq} }"
+    fitstr = format("%8.3g", self.fitness.to_f)
+    "{ chromsome_len: #{chromosome_len}, fitness: #{fitstr}, gene sequence: #{gene_seq} }"
   end
 
   def inspect
@@ -26,11 +28,6 @@ class ChromosomeBase < Array
 
   def evaluate_fitness
     raise NotImplementedError.new('must provide evaluate_fitness method!')
-  end
-
-  def fitness=(fitness)
-    raise RuntimeError("fitness can't be negative!") if fitness < 0
-    @fitness = fitness
   end
 
   # Returns a stringified representation of this chromosome's genes

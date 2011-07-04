@@ -1,9 +1,9 @@
 #####
 # represents a population of chromosomes
 #####
-class Population < Array
+class Population  < Array
   attr_reader :total_fitness 
-
+  
   def initialize
     @total_fitness = 0
     @last_size = -1
@@ -14,7 +14,8 @@ class Population < Array
   def calc_fitness
     @last_size = self.size
     self.each do |x|  
-      x.fitness = x.evaluate_fitness
+      currfit = x.evaluate_fitness
+      x.fitness = currfit
       @total_fitness += x.fitness
     end
   end
