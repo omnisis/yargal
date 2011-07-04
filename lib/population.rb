@@ -2,19 +2,26 @@
 # represents a population of chromosomes
 #####
 class Population < Array
-  attr_reader :total_fitness, :fitness_scores
+  attr_reader :total_fitness 
+
+  def initialize
+    @total_fitness = 0
+    @last_size = -1
+  end
 
   # Goes thru the entire population recalculating everyone's fitness
   # and updating the total_fitness of the population
   def calc_fitness
-    raise "Population is empty!  Did you add chromosomes to it?" if self.size == 0
-    @fitness_scores = self.collect { |x| x.evaluate_fitness }
-    @total_fitness = @fitness_scores.inject { |memo, n| memo + n }
+    @last_size = self.size
+    self.each do |x|  
+      x.fitness = x.evaluate_fitness
+      @total_fitness += x.fitness
+    end
   end
 
   # Mean fitness of the entire population
   def mean_fitness
-    raise "Population is empty!  Did you add chromosomes to it?" if self.size == 0
+    calc_fitness if @last_size == -1 or @last_size != self.size
     total_fitness.to_f / self.size
   end
 

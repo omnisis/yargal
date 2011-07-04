@@ -1,3 +1,4 @@
+#shamelessly stolen from ActiveSupport's Array core extensions
 class Array
   def in_groups_of(number, fill_with = nil)
     if fill_with == false
@@ -18,4 +19,9 @@ class Array
       end
     end
   end
+
+  def dissect(index)
+    [ self.slice(0, index), self.slice(index, self.length) ]
+  end
+
 end
