@@ -8,13 +8,11 @@ module YargalSpecHelper
 
     def self.random(len = 10)
       rand_genes = len.times.collect { rand(2).to_s }
-      #puts "Created random chromosome: #{rand_genes.join}"
       self.new(rand_genes)
     end
 
     def evaluate_fitness
       fitness = self.join.to_i(2)
-      puts "Evaluating fitness of #{self.gene_seq} -- fitness is: #{fitness}"
       fitness
     end
 
@@ -57,13 +55,14 @@ module YargalSpecHelper
     def evaluate_fitness
       likeness = 0.0
       self.each_index do |i| 
-        if self[i] == THEWORD[i]
-          likeness += 10.0
-        else
-          likeness += 25.0 / (self[i].ord - THEWORD[i].ord).abs
-        end
+          diff = (self[i].ord - THEWORD[i].ord).abs
+          if diff == 0
+            likeness += 1.0
+          else
+            likeness += (25 - diff) / 26.0
+          end
       end
-      likeness
+      self.fitness = likeness.to_f / THEWORD.length
     end
 
     def self.random_letter

@@ -38,4 +38,10 @@ describe "Population" do
     end
   end
 
+  it "should sort population by fitness" do
+    @fittest = @pop.most_fit(3).collect{ |x| x.fitness }
+    @exp = @test_fitscores.sort.reverse.slice(0,3)
+    @fittest.should eql @exp
+  end
+
 end

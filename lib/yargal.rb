@@ -16,75 +16,97 @@ class GA
   #   - chromosome_len: the bitlength of a single binary encoded chromosome
   #   - population_size: the overall size of of the population from generation to generation
   def initialize(chromosome_klass, options={}) 
-    @crossover_rate = options[:crossover_rate] || 0.7
+    @crossover_rate = options[:crossover_rate] || 0.8
     @mutation_rate = options[:mutation_rate] || 0.001
     @population_size = options[:population_size] || 50
     @logger = options[:logger] if options[:logger]
-    @chromosome_length = options[:chromosome_length] || 10
     @chromosome_klass = chromosome_klass
     @generation_count = 0
     @elitism_factor = options[:elitism_factor] || 0.05 
+    @initial_population_size = options[:initial_population_size] || 5000
     build_initial_population
   end
 
   # evolves our population thru a series of generations
   def evolve!(num_generations = 1)
+	@num_generations = num_generations
+    seed_initial_population
+
     num_generations.times do
       perform_evolution!
     end
   end
 
+  # seed the initial population
+  def seed_initial_population
+    @seed_population = Population.new
+    @initial_population_size.times do
+      @seed_population << @chromosome_klass.random
+    end
+    @seed_population.calc_fitness
+    #@curr_population = Population.from_a(@seed_population.most_fit(@population_size))
+    @curr_population = Population.from_a(@seed_population.sample(@population_size))
+  end
+
   def perform_evolution!()
-    puts "calculating fitness ..."
-    @curr_population.calc_fitness
-    print_stats
-    print_currgen
+    #print_currgen
 
+    # create intermediate pop from stochastically sample members of the current pop
     new_pop = Population.new()
-    num_selections = @population_size/2 + @population_size % 2
-    puts "num iterations: #{num_selections}"
+    @curr_population.sample(@population_size).each { |x| new_pop << x }
+    #puts "intermediate population: #{new_pop}"
 
-    num_selections.times do 
-      # selection
-      mom, dad = @curr_population.sample(2)
+    # clear out the current population
+    @curr_population.clear  
+
+    new_pop.in_groups_of(2) do |mom,dad|
+      # handle case of odd population size
+      dad = new_pop.sample if dad.nil? 
 
       # x-over
-      children =  crossover(mom, dad)
+      children = crossover(mom, dad)
 
       # mutation
       children.each do |child| 
-        next if child.nil?
+        break if @curr_population.size == @population_size
         child.mutate! if rand <= @mutation_rate
-        new_pop << child 
+        @curr_population << child 
       end 
 
     end
 
-    @curr_population = Population.new
-    new_pop.each { |x| @curr_population << x }
-    @generation_count += 1
+    # primitive elitism
+    #fittest = @curr_population.most_fit(5)
+    #@curr_population.pop(5)
+    #fittest.each { |x| @curr_population << x }
+    
+    # update generation count
+    @curr_population.generation += 1
+
+    # update fitness
+    @curr_population.calc_fitness
+    print_stats
+
   end
 
   def print_stats
-    puts "------------------------------------------------------------------------"
-    puts "generation [#{generation_count}] -- " +
-          "mean fitness [#{format("%d", @curr_population.mean_fitness)}] -- " +
-          "total fitness [#{format("%d", @curr_population.total_fitness)}]"
-    puts "------------------------------------------------------------------------"
+    #puts "------------------------------------------------------------------------"
+    #puts "generation [#{@curr_population.generation}] -- " +
+     #     "mean fitness [#{format("%8.8g", @curr_population.mean_fitness)}] -- " +
+      #    "total fitness [#{format("%8.8g", @curr_population.total_fitness)}]"
+    #puts "------------------------------------------------------------------------"
+	printf "%s", "[" if @curr_population.generation == 1
+	printf "%s", "." if @curr_population.generation % (0.01 * @num_generations) == 0
+	puts "]\n" if @curr_population.generation == @num_generations 
   end
 
   def print_currgen
-    @curr_population.each { |x| puts "member: #{x}"  } if @logger
-  end
-
-  def maybe_do_crossover(mom, dad)
-    if rand <= @crossover_rate
-      crossover(mom, dad)
-    end
+    puts "#{@curr_population}"  
   end
 
   # Performs crossover (recombination) operator on two chromosomes
   def crossover(mom, dad, split_pt = rand(mom.chromosome_len)  )
+	return [mom, dad] if rand >= @crossover_rate
     puts "performing x-over ..." if @logger
     mom_parts = mom.dissect(split_pt)
     dad_parts = dad.dissect(split_pt) 

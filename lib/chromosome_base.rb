@@ -18,8 +18,8 @@ class ChromosomeBase < Array
   alias :chromosome_len :size
 
   def to_s
-    fitstr = format("%8.3g", self.fitness.to_f)
-    "{ chromsome_len: #{chromosome_len}, fitness: #{fitstr}, gene sequence: #{gene_seq} }"
+    fitstr = format("%8.8g", self.fitness.to_f)
+    "{ gene sequence: #{gene_seq}, fitness: #{fitstr} }"
   end
 
   def inspect

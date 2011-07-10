@@ -56,12 +56,9 @@ describe "GA Engine" do
     end
   end
 
-  pending "should perform mutation" do
-  end
-
-  pending "should perform selection" do
-  end
-
+  #######
+  # roulette selection
+  #######
   describe "roulette selection" do
 
     def calc_selection_rate(chromosome)
@@ -104,15 +101,26 @@ describe "GA Engine" do
       puts "fitness after 500 tries: #{@test_population.total_fitness}"
     end
 
-
     it "should improve fitness over time" do
-      @ga = GA.new(MysteryWord, { :population_size => 5000, :mutation_rate => 0.01 })
-      5.times do
-        @ga.evolve!
-      end
+      @ga = GA.new(MysteryWord, { :population_size => 30, :mutation_rate => 0.001 })
+      @ga.evolve!(5000)
       @ga.print_currgen
+      puts "most fit: #{@ga.curr_population.most_fit(1)} "
     end
 
+  end
+
+
+  describe "mystery word" do
+    it "should have a good fitness func" do
+      w1 = MysteryWord.new("camelot")
+      w2 = MysteryWord.new("camelop")
+      w3 = MysteryWord.new("cameloa")
+      w4 = MysteryWord.new("dafefgp")
+      w5 = MysteryWord.new("bbnelop")
+      words = [w1,w2,w3,w4,w5]
+      words.each { |x| x.evaluate_fitness; puts "word: #{x}" }
+    end
   end
 
 end
