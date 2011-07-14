@@ -3,36 +3,36 @@
 # an arbitrary length array. 
 ##### 
 class ChromosomeBase < Array
-  attr_accessor  :chromosome_len, :fitness
-  DEFAULT_MUTATION_RATE = 0
+  attr_accessor  :fitness
 
-  # if an existing gene_seq is supplied is supplied use it
-  # otherwise generate a random bit string of length len
-  def initialize(gene_sequence = [])
-    gene_sequence.length.times do |i|
-      self << gene_sequence[i]
-    end
-    @fitness = 0.0
+  def initialize
+    @fitness = 0
   end
-
-  alias :chromosome_len :size
 
   def to_s
-    fitstr = format("%8.8g", self.fitness.to_f)
-    "{ gene sequence: #{gene_seq}, fitness: #{fitstr} }"
+    "{ gene sequence: #{gene_seq}, fitness: #{fitness} }"
   end
 
-  def inspect
-    to_s
+  def calc_fitness
+    raise NotImplementedError.new('must provide calc_fitness method!')
   end
 
-  def evaluate_fitness
-    raise NotImplementedError.new('must provide evaluate_fitness method!')
+  def self.random()
+    raise NotImplementedError.new('must provide singleton method random()')
+  end
+
+  def set_genes(new_genes=[])
+    self.clear
+    new_genes.each { |gene| self << gene }
+  end
+  
+  def mutate!
+    raise NotImplementedError.new('must provide a mutate() method!')
   end
 
   # Returns a stringified representation of this chromosome's genes
   def gene_seq
-    "[" + self.collect { |x| x.to_s }.join('-') + "]"
+    "[" + self.collect { |x| x.to_s }.join('|') + "]"
   end
 
 end
