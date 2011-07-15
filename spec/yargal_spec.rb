@@ -7,25 +7,20 @@ require File.dirname(__FILE__) + '/../examples/mystery_word'
 #####
 describe "GA Engine" do
   before(:each) do
-    @ga = GA.new(MysteryWord)
+    @ga = GA.new(MysteryWord, {:population_size => 3000, :mutation_rate => 0.25})
     @test_population = []
-    @most_fit = MysteryWord.new("camelos")
-    @least_fit = MysteryWord.new("zzzzzzz")
-    @test_population << MysteryWord.new("baeelou")
-    @test_population << MysteryWord.new("asdjdsa")
-    @test_population << MysteryWord.new("camezzz") 
+    @most_fit = MysteryWord.new("Hello World!")
+    @least_fit = MysteryWord.new("zzzzz aaaaaa")
+    @test_population << MysteryWord.new("Hella Worlh!")
+    @test_population << MysteryWord.new("Bella Wurld!")
+    @test_population << MysteryWord.new("Sello World!") 
     @test_population << @most_fit << @least_fit
     @test_population.each { |x| x.calc_fitness }
     @test_population.sort!{ |a, b| a.fitness <=> b.fitness}
   end
 
-  it "should have sane defaults" do:w
-    @ga.mutation_rate.should   eql GA::DEFAULTS[:mutation_rate]
-    @ga.population_size.should eql GA::DEFAULTS[:population_size]
-  end
-
   it "should properly parse setup options" do
-    options = { :chromosome_len => 32, :population_size => 10, :mutation_rate => 0.2 }
+    options = { :population_size => 10, :mutation_rate => 0.2 }
     ga = GA.new(MysteryWord, options)
     ga.population_size.should eql 10
     ga.mutation_rate.should eql 0.2
@@ -52,10 +47,8 @@ describe "GA Engine" do
     def calc_selection_rate(pop, chromosome)
       selmap = {}
       1000.times do
-        selection = @ga.select_roulette(@test_population)
-        if selmap[selection].nil?
-          selmap[selection] = 0
-        end 
+        selection = @ga.select_roulette(@test_population) 
+        selmap[selection] = 1 if selmap[selection].nil?
         selmap[selection] += 1 
       end
       total_selections = selmap.values.reduce(:+)
@@ -83,8 +76,8 @@ describe "GA Engine" do
     end
 
     it "should evolve a maximal solution" do
-      @ga = GA.new(MysteryWord, { :population_size => 1000, :mutation_rate => 0.25, :elitism_rate => 0.10 })
-      @ga.evolve!(30)
+      @ga = GA.new(MysteryWord, { :population_size => 2000, :mutation_rate => 0.25, :elitism_rate => 0.10 })
+      @ga.evolve!(50)
       @ga.curr_population[0].fitness.should == 2.0
     end
 
@@ -93,11 +86,11 @@ describe "GA Engine" do
 
   describe "mystery word" do
     it "should have a good fitness func" do
-      w1 = MysteryWord.new("camelot")
-      w2 = MysteryWord.new("camelop")
-      w3 = MysteryWord.new("hameloa")
-      w4 = MysteryWord.new("dafefgp")
-      w5 = MysteryWord.new("zzzgggg")
+      w1 = MysteryWord.new("hello world!")
+      w2 = MysteryWord.new("hella world!")
+      w3 = MysteryWord.new("bella worlds")
+      w4 = MysteryWord.new("doodo world!")
+      w5 = MysteryWord.new("abcde fghijk")
       words = [w1,w2,w3,w4,w5]
       #words.each { |x| x.calc_fitness; puts "word: #{x}" }
     end

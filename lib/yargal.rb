@@ -42,7 +42,13 @@ class GA
       @curr_population.sort! { |a, b| b.fitness <=> a.fitness }
 
       # print best
-      puts "Generation: #{generation_count}, best: #{@curr_population[0]}"
+      best = @curr_population[0]
+      puts "Generation: #{generation_count}, best: #{best}"
+      if best.respond_to? :max_fitness and best.fitness == best.max_fitness
+        puts "Maximal fitness reached ..."
+        break
+      end
+      
 
       # add elites to new population
       new_pop = []

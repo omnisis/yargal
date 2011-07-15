@@ -1,7 +1,7 @@
-#####
+#
 # Base class for a chromosome.  Internally a chromosome is represented as 
 # an arbitrary length array. 
-##### 
+#
 class ChromosomeBase < Array
   attr_accessor  :fitness
 

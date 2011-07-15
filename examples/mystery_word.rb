@@ -41,6 +41,11 @@ class MysteryWord < ChromosomeBase
       self[mpos] = newchar 
       self
     end
+    
+    def max_fitness
+      2.0
+    end
+    
   end
   
 
