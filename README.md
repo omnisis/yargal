@@ -2,7 +2,7 @@ YARGAL: Yet Another Ruby Genetic Algorithm Library
 ================
 
 YARGAL is a very simplistic Genetic Algorithm Library written in Ruby.  Currently YARGAL
-uses simple [Roulette Wheel selection](http://en.wikipedia.org/wiki/Fitness_proportionate_selection) coupled with a single-point
+uses [Fitness Proportionate Selection](http://en.wikipedia.org/wiki/Fitness_proportionate_selection) coupled with a single-point
 crossover operator.  Elitism is also employed to preserve the best chromosomes from the previous population.  
 YARGAL stands for *Y*et*A*nother*R*uby*G*enetic*A*lgorithm*L*ibrary.
 

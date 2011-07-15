@@ -51,6 +51,6 @@ class MysteryWord < ChromosomeBase
 
 # MAIN
 if __FILE__ == $0
-    @ga = GA.new(MysteryWord, {:population_size => 1500, :mutation_rate => 0.25})
-    @ga.evolve!(40)
+    @ga = GA.new(MysteryWord, {:population_size => 3000, :mutation_rate => 0.25})
+    @ga.evolve!(50)
 end

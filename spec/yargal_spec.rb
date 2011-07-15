@@ -16,7 +16,7 @@ describe "GA Engine" do
     @test_population << MysteryWord.new("Sello World!") 
     @test_population << @most_fit << @least_fit
     @test_population.each { |x| x.calc_fitness }
-    @test_population.sort!{ |a, b| a.fitness <=> b.fitness}
+    @test_population.sort!{ |a, b| b.fitness <=> a.fitness}
   end
 
   it "should properly parse setup options" do
@@ -34,22 +34,25 @@ describe "GA Engine" do
     it "should mix dna of both parents" do
       mom = MysteryWord.new("bamolot")
       dad = MysteryWord.new("camisal")
-      child = @ga.crossover(mom,dad, 3)
-      child.join.should eql "bamisal"
+      children = @ga.crossover(mom,dad, 3)
+      children[0].join.should eql "bamisal"
+      children[1].join.should eql "camolot"
     end
   end
 
+  
   #######
-  # roulette selection
+  # sus selection
   #######
-  describe "roulette selection" do
+  describe "sus selection" do
     
     def calc_selection_rate(pop, chromosome)
       selmap = {}
-      1000.times do
-        selection = @ga.select_roulette(@test_population) 
-        selmap[selection] = 1 if selmap[selection].nil?
-        selmap[selection] += 1 
+      tf = @test_population.collect { |x| x.fitness}.reduce(:+)
+      selections = @ga.select_sus(5000, tf, @test_population)
+      selections.each do |x|
+        selmap[x] = 1 if not selmap.has_key?(x)
+        selmap[x] += 1 
       end
       total_selections = selmap.values.reduce(:+)
       selmap[chromosome] / total_selections.to_f
@@ -66,6 +69,8 @@ describe "GA Engine" do
     end
 
   end
+  
+  
 
   ####
   # Evolution tests
@@ -78,7 +83,7 @@ describe "GA Engine" do
     it "should evolve a maximal solution" do
       @ga = GA.new(MysteryWord, { :population_size => 2000, :mutation_rate => 0.25, :elitism_rate => 0.10 })
       @ga.evolve!(50)
-      @ga.curr_population[0].fitness.should == 2.0
+      @ga.curr_population[0].fitness.should  be_within(1.0).of(2.0)
     end
 
   end

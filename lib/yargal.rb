@@ -76,49 +76,65 @@ class GA
   # mutation of children from parents from an input population
   def mate(in_pop, num_children)
     out_pop = []
-    num_children.times do
+   
     # selection
-      mom = in_pop.slice(0, in_pop.size/2).sample
-      dad = in_pop.slice(0, in_pop.size/2).sample
-
+    parents = select_sus(num_children,  total_fitness(in_pop), in_pop) 
+    
+    parents.each_slice(2) do |mom, dad|
+    
       # x-over
-      child = crossover(mom, dad)
+      children = crossover(mom, dad)
 
       # mutation
-      child.mutate! if rand <= @mutation_rate
-
-      out_pop << child
+      children.each do |c|
+        c.mutate! if rand <= @mutation_rate
+        out_pop << c
+      end
+      
     end
     out_pop
   end
 
   # Performs crossover (recombination) operator on two chromosomes
   def crossover(mom, dad, split_pt = rand(mom.length))
-    raise ArgumentError('mom.length must be the same as dad.length!') unless mom.length == dad.length
-    genes = mom.slice(0, split_pt) + dad.slice(split_pt, dad.length)
-    child = mom.class.random()
-    child.set_genes(genes)
-    child
+    raise ArgumentError("cannot perform x-over unless parent chromosomes are the same length!") unless mom.length == dad.length
+    m1, m2 = [mom.slice(0, split_pt), mom.slice(split_pt, mom.length)]
+    d1, d2 = [dad.slice(0, split_pt), dad.slice(split_pt, dad.length)]
+    c1 = @chromosome_klass.random()
+    c2 = @chromosome_klass.random()
+    c1.set_genes(m1 + d2)
+    c2.set_genes(d1 + m2)
+    [c1, c2]
   end
 
   def total_fitness(pop)
     pop.collect { |x| x.fitness }.reduce(:+)
   end
+  
 
-  # Performs "Roulette Wheel" selection whereby probability of selection is
-  # proportional to the fitness of individual chromosomes (higher fitness
-  # chromosomes have a higher prob. of being selected)
-  def select_roulette(pop)
-    tf = total_fitness(pop)
-    stop = rand
-    curr_val = 0
-    p_sel = nil
-    pop.each do |p|
-      p_sel = p
-      curr_val += p.fitness / tf.to_f
-      break if curr_val >= stop
+  # Performs 'Stochastic Universal Sampling' Algorithm 
+  def select_sus(num_sel=1, tf, pop)
+    # intialize a table with each member's probability selection weight
+    selprob_table = []
+    pval = 0
+    pop.each_with_index do |x,i|
+      pval += x.fitness / tf.to_f
+      selprob_table[i] = pval
     end
-    p_sel
+    
+    # march down a list of evenly spaced ptrs that are  1 / num_sel dist
+    # away from one another and choose the members of the population whose
+    # selection probabilty is defined by that portion of the overall selection
+    # probability distribution (see http://www.geatbx.com/docu/algindex-02.html#P416_20744)
+    selections = []
+    p_sel = 0 
+    ptr = rand / num_sel.to_f
+    num_sel.times.each  do |i|
+      p_sel += 1 while ptr > selprob_table[p_sel]
+      selections.push pop[p_sel]  # so maybe 'pop' was a bad variable name?
+      ptr += 1 / num_sel.to_f 
+    end
+    selections
   end
 
 end
