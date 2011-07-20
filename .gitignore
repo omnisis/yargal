@@ -1,6 +1,15 @@
-*.swp
-*~
-.idea
-*.sw?
-.project
-.settings
+# rcov generated
+coverage
+
+# rdoc generated
+rdoc
+
+# yard generated
+doc
+.yardoc
+
+# bundler
+.bundle
+
+# jeweler generated
+pkg
